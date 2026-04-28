@@ -52,7 +52,7 @@
 </tr>
 </table>
 
-> **💡 Tip:** You can also **[use it online via GitHub Pages](../../)** without downloading — just bookmark the link.
+> **💡 Tip:** You can also **[use it online via GitHub Pages](https://ducp507.github.io/scm-content-generator/)** without downloading — just bookmark the link.
 
 ---
 
