@@ -1380,6 +1380,8 @@ CRITICAL RULES — ABSOLUTE, NO EXCEPTIONS:
 - Do NOT add your own opinions, analysis, or commentary beyond what the article states.
 - Do NOT use phrases like "studies show" or "research suggests" unless the article specifically cites those studies.
 - This is STRICTLY grounded summarization — zero creativity, zero invention, zero embellishment.
+- When referencing data or claims, phrase them as "According to the article..." or "The article highlights..." to make source attribution clear.
+- If the article is too short or lacks substance, say so honestly rather than padding with your own knowledge.
 - Output PLAIN TEXT ONLY. No markdown formatting whatsoever — no asterisks, no bold (**), no italic (*), no headers (#), no bullet markers (- or *). Use line breaks and spacing for structure instead.
 - Do not use any markdown syntax at all in the output.`;
 
@@ -1418,7 +1420,13 @@ CRITICAL RULES — ABSOLUTE, NO EXCEPTIONS:
     systemPrompt += `\n--- End References ---\nUse these reference posts to understand the desired tone, structure, and voice. Generate content in a similar style.`;
   }
 
-  const userPrompt = `Based on the following article, write a ${currentPlatform === 'linkedin' ? 'LinkedIn post' : 'Instagram caption'} for Suffolk University's SCM Program. Remember: PLAIN TEXT ONLY, no markdown formatting.
+  const userPrompt = `Based on the following article, write a ${currentPlatform === 'linkedin' ? 'LinkedIn post' : 'Instagram caption'} for Suffolk University's SCM Program.
+
+RULES REMINDER:
+- PLAIN TEXT ONLY, no markdown formatting.
+- ONLY use information found in the article below. Do NOT add any external knowledge.
+- Every claim in your post must be traceable to a specific part of the article.
+- If the article does not mention something, do NOT include it.
 
 ARTICLE:
 ${articleContent}`;
@@ -1935,6 +1943,8 @@ CRITICAL RULES — ABSOLUTE:
 - NEVER hallucinate or fabricate information. Every claim must come DIRECTLY from the source article.
 - NEVER add facts, statistics, or claims not in the source article.
 - NEVER infer or extrapolate. If the article doesn't say it, you don't write it.
+- When referencing data or claims, phrase them as "According to the article..." or "The article highlights..." to make source attribution clear.
+- If the article is too short or lacks substance, say so honestly rather than padding with your own knowledge.
 - STRICTLY grounded summarization — zero creativity, zero invention.
 - Output PLAIN TEXT ONLY. No markdown (no **, no *, no #, no - bullets). Use line breaks for structure.`;
 
@@ -1951,7 +1961,15 @@ CRITICAL RULES — ABSOLUTE:
       sysPrompt += `\n\nSTYLE REFERENCES:\n` + refs.map((r,j) => `---\n${r.text}\n---`).join('\n');
     }
 
-    const userPrompt = `Write a ${plan.brief.platform === 'linkedin' ? 'LinkedIn post' : 'Instagram caption'} for Suffolk University SCM Program. PLAIN TEXT ONLY. Summarize ONLY what is in the article below.\n\nARTICLE:\n${articleContent}`;
+    const userPrompt = `Write a ${plan.brief.platform === 'linkedin' ? 'LinkedIn post' : 'Instagram caption'} for Suffolk University SCM Program.
+
+RULES REMINDER:
+- PLAIN TEXT ONLY, no markdown.
+- ONLY use information from the article below. Do NOT add external knowledge.
+- Every claim must be traceable to the article. If the article doesn't mention it, don't include it.
+
+ARTICLE:
+${articleContent}`;
 
     try {
       const content = await callClaude(userPrompt, sysPrompt);
