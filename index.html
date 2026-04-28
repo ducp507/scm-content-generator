@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCM Content Generator — Suffolk University</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0a1628;
+    --navy-light: #111d33;
+    --navy-mid: #162240;
+    --navy-soft: #1c2d4f;
+    --gold: #c9a84c;
+    --gold-light: #ddc06a;
+    --gold-dim: #a68b3a;
+    --gold-glow: rgba(201, 168, 76, 0.15);
+    --text-primary: #e8e6e1;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --border: rgba(201, 168, 76, 0.12);
+    --border-hover: rgba(201, 168, 76, 0.3);
+    --surface: rgba(22, 34, 64, 0.6);
+    --surface-hover: rgba(28, 45, 79, 0.8);
+    --danger: #ef4444;
+    --danger-soft: rgba(239, 68, 68, 0.1);
+    --success: #22c55e;
+    --success-soft: rgba(34, 197, 94, 0.1);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-xs: 6px;
+    --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--navy);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Header ─── */
+  .header {
+    background: linear-gradient(180deg, var(--navy-light) 0%, var(--navy) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+  }
+  .header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .brand-icon {
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--navy);
+    letter-spacing: -1px;
+    box-shadow: 0 2px 12px rgba(201, 168, 76, 0.25);
+  }
+  .brand-text h1 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+  }
+  .brand-text span {
+    font-size: 11.5px;
+    color: var(--gold);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .header-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--danger);
+  }
+  .status-dot.connected { background: var(--success); box-shadow: 0 0 8px rgba(34,197,94,0.4); }
+
+  /* ─── Tabs ─── */
+  .tabs {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 16px 24px 0;
+    display: flex;
+    gap: 4px;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    transition: var(--transition);
+    position: relative;
+  }
+  .tab-btn:hover { color: var(--text-secondary); background: var(--surface); }
+  .tab-btn.active {
+    color: var(--gold);
+    background: var(--surface);
+  }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 2px 2px 0 0;
+  }
+  .tab-btn svg { width: 15px; height: 15px; margin-right: 6px; vertical-align: -2px; }
+
+  /* ─── Main Container ─── */
+  .main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px 48px;
+  }
+  .tab-content {
+    display: none;
+    animation: fadeIn 0.25s ease;
+  }
+  .tab-content.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ─── Cards ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-top: 20px;
+    transition: var(--transition);
+  }
+  .card:hover { border-color: var(--border-hover); }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title svg { width: 16px; height: 16px; }
+
+  /* ─── Form Elements ─── */
+  label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  textarea, input[type="text"], input[type="password"], select {
+    width: 100%;
+    background: var(--navy);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 12px 14px;
+    transition: var(--transition);
+    outline: none;
+    resize: vertical;
+  }
+  textarea:focus, input[type="text"]:focus, input[type="password"]:focus, select:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-glow);
+  }
+  textarea::placeholder, input::placeholder {
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  textarea { min-height: 120px; line-height: 1.7; }
+
+  .form-group { margin-bottom: 18px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-hint {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ─── Buttons ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+  }
+  .btn svg { width: 15px; height: 15px; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    color: var(--navy);
+    box-shadow: 0 2px 12px rgba(201, 168, 76, 0.2);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 4px 20px rgba(201, 168, 76, 0.35);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn-secondary {
+    background: var(--navy-mid);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+  }
+  .btn-danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+  .btn-danger:hover { background: rgba(239, 68, 68, 0.2); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    padding: 8px 14px;
+    font-size: 12.5px;
+  }
+  .btn-ghost:hover { color: var(--gold); }
+
+  .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+  /* ─── Output Area ─── */
+  .output-area {
+    background: var(--navy);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 18px;
+    min-height: 180px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--text-primary);
+    position: relative;
+  }
+  .output-placeholder {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 13px;
+  }
+
+  /* ─── Platform Selector ─── */
+  .platform-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .platform-btn {
+    padding: 14px 18px;
+    background: var(--navy);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .platform-btn:hover { border-color: var(--border-hover); }
+  .platform-btn.active {
+    border-color: var(--gold);
+    background: var(--gold-glow);
+  }
+  .platform-btn .p-icon { font-size: 20px; }
+  .platform-btn .p-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .platform-btn .p-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* ─── Input Selector ─── */
+  .input-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 14px;
+    background: var(--navy);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .input-toggle-btn {
+    flex: 1;
+    padding: 9px 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .input-toggle-btn.active {
+    background: var(--gold-glow);
+    color: var(--gold);
+  }
+
+  .url-warning {
+    background: rgba(234, 179, 8, 0.08);
+    border: 1px solid rgba(234, 179, 8, 0.2);
+    border-radius: var(--radius-xs);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #eab308;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ─── History Items ─── */
+  .history-item {
+    background: var(--navy);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .history-item:hover {
+    border-color: var(--border-hover);
+    background: var(--navy-mid);
+  }
+  .history-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .history-platform {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .history-platform.linkedin { background: rgba(10, 102, 194, 0.15); color: #5ba3e0; }
+  .history-platform.instagram { background: rgba(225, 48, 108, 0.15); color: #e86c9a; }
+  .history-date { font-size: 11.5px; color: var(--text-muted); }
+  .history-preview {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .history-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  /* ─── Reference Items ─── */
+  .ref-item {
+    background: var(--navy);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .ref-item .ref-type {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  .ref-item .ref-type.linkedin { background: rgba(10, 102, 194, 0.15); color: #5ba3e0; }
+  .ref-item .ref-type.instagram { background: rgba(225, 48, 108, 0.15); color: #e86c9a; }
+  .ref-item .ref-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    max-height: 120px;
+    overflow: hidden;
+    position: relative;
+  }
+  .ref-item .ref-text.expanded { max-height: none; }
+  .ref-item .ref-delete {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+  }
+  .ref-expand {
+    font-size: 12px;
+    color: var(--gold);
+    cursor: pointer;
+    margin-top: 6px;
+    display: inline-block;
+  }
+
+  /* ─── Loading States ─── */
+  .loading-dots { display: inline-flex; gap: 4px; align-items: center; }
+  .loading-dots span {
+    width: 6px;
+    height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: dotPulse 1.2s infinite;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotPulse {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
+  /* ─── Toast ─── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--navy-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 20px;
+    font-size: 13px;
+    color: var(--text-primary);
+    box-shadow: var(--shadow);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(34, 197, 94, 0.3); }
+  .toast.error { border-color: rgba(239, 68, 68, 0.3); }
+
+  /* ─── Empty State ─── */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+  }
+  .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.3; }
+  .empty-state p { font-size: 14px; }
+
+  /* ─── Streaming cursor ─── */
+  .streaming-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 16px;
+    background: var(--gold);
+    animation: blink 0.8s infinite;
+    vertical-align: text-bottom;
+    margin-left: 2px;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  /* ─── Scrollbar ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--navy-soft); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* ─── API Key Setup Modal ─── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal {
+    background: var(--navy-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    max-width: 440px;
+    width: 90%;
+    box-shadow: var(--shadow);
+  }
+  .modal h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--gold);
+  }
+  .modal p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 640px) {
+    .header-inner { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .tabs { overflow-x: auto; }
+    .form-row { grid-template-columns: 1fr; }
+    .platform-selector { grid-template-columns: 1fr; }
+    .card { padding: 20px; }
+  }
+
+  /* ─── Character count ─── */
+  .char-count {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 6px;
+  }
+  .char-count.warn { color: #eab308; }
+  .char-count.over { color: var(--danger); }
+
+  /* ─── Planner ─── */
+  .planner-progress {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 24px;
+    padding: 0 8px;
+  }
+  .p-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .p-step .p-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--navy);
+    border: 1.5px solid var(--border);
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .p-step.active { color: var(--gold); }
+  .p-step.active .p-num {
+    background: var(--gold-glow);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .p-step.done .p-num {
+    background: var(--success-soft);
+    border-color: var(--success);
+    color: var(--success);
+  }
+  .p-step.done { color: var(--success); }
+  .p-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    margin: 0 10px;
+    min-width: 20px;
+  }
+  .p-line.done { background: var(--success); }
+
+  .day-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .day-card {
+    background: var(--navy);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    transition: var(--transition);
+  }
+  .day-card:hover { border-color: var(--border-hover); }
+  .day-card.today {
+    border-color: var(--gold);
+    box-shadow: 0 0 16px var(--gold-glow);
+  }
+  .day-card.posted { opacity: 0.55; }
+  .day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .day-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .day-label .today-badge {
+    background: var(--gold);
+    color: var(--navy);
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+  .day-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .day-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .day-article {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--navy-mid);
+    border-radius: var(--radius-xs);
+    font-size: 12px;
+  }
+  .day-article a {
+    color: var(--gold-light);
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .day-article a:hover { text-decoration: underline; }
+  .day-post-preview {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    max-height: 100px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .day-post-preview.expanded { max-height: none; }
+  .day-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .article-results {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .article-opt {
+    padding: 10px 12px;
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .article-opt:hover { border-color: var(--border-hover); }
+  .article-opt.selected {
+    border-color: var(--gold);
+    background: var(--gold-glow);
+  }
+  .article-opt-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+  .article-opt-url {
+    font-size: 11px;
+    color: var(--gold-dim);
+    word-break: break-all;
+  }
+  .article-opt-snippet {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  .manual-url-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .manual-url-row input {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .manual-url-row .btn { flex-shrink: 0; padding: 8px 14px; font-size: 12px; }
+
+  .plan-expiry {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  .gen-progress {
+    margin-top: 12px;
+    background: var(--navy);
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .gen-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+  .gen-status {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  .posted-badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--success-soft);
+    color: var(--success);
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ Header ═══════════ -->
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">SU</div>
+      <div class="brand-text">
+        <h1>SCM Content Generator</h1>
+        <span>Suffolk University · Supply Chain Management</span>
+      </div>
+    </div>
+    <div class="header-status">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">API not configured</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════ Tabs ═══════════ -->
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="generate" role="tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    Generate
+  </button>
+  <button class="tab-btn" data-tab="planner" role="tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Planner
+  </button>
+  <button class="tab-btn" data-tab="history" role="tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    History
+  </button>
+  <button class="tab-btn" data-tab="references" role="tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    References
+  </button>
+  <button class="tab-btn" data-tab="settings" role="tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Settings
+  </button>
+</nav>
+
+<!-- ═══════════ Main Content ═══════════ -->
+<main class="main">
+
+  <!-- ── Generate Tab ── -->
+  <div class="tab-content active" id="tab-generate">
+    <!-- Platform Selector -->
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        Select Platform
+      </div>
+      <div class="platform-selector">
+        <div class="platform-btn active" data-platform="linkedin" onclick="selectPlatform('linkedin')">
+          <div>
+            <div class="p-icon">💼</div>
+          </div>
+          <div>
+            <div class="p-label">LinkedIn</div>
+            <div class="p-desc">Professional post format</div>
+          </div>
+        </div>
+        <div class="platform-btn" data-platform="instagram" onclick="selectPlatform('instagram')">
+          <div>
+            <div class="p-icon">📸</div>
+          </div>
+          <div>
+            <div class="p-label">Instagram</div>
+            <div class="p-desc">Visual caption with hashtags</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Section -->
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Article Input
+      </div>
+
+      <div class="input-toggle">
+        <button class="input-toggle-btn active" onclick="toggleInput('text')">Paste Article Text</button>
+        <button class="input-toggle-btn" onclick="toggleInput('url')">Article URL</button>
+      </div>
+
+      <div id="inputText" class="form-group">
+        <textarea id="articleText" placeholder="Paste the full article text here. The generated post will be based solely on the content you provide — nothing will be fabricated or assumed." rows="8"></textarea>
+      </div>
+
+      <div id="inputUrl" class="form-group" style="display:none;">
+        <div class="url-warning">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          URL fetching uses proxy services to bypass CORS. Most URLs will work, but some sites may still block access.
+        </div>
+        <input type="text" id="articleUrl" placeholder="https://example.com/article">
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="generateBtn" onclick="generatePost()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Generate Post
+        </button>
+        <button class="btn btn-secondary" onclick="clearAll()">Clear</button>
+      </div>
+    </div>
+
+    <!-- Output Section -->
+    <div class="card" id="outputCard" style="display:none;">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span id="outputTitle">Generated Post</span>
+      </div>
+
+      <div class="output-area" id="outputArea">
+        <span class="output-placeholder">Your generated post will appear here...</span>
+      </div>
+      <div class="char-count" id="charCount"></div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="copyBtn" onclick="copyOutput()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy to Clipboard
+        </button>
+        <button class="btn btn-secondary" id="openPlatformBtn" onclick="openPlatform()">
+          Open in <span id="platformLabel">LinkedIn</span>
+        </button>
+        <button class="btn btn-ghost" onclick="regeneratePost()">
+          ↻ Regenerate
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Planner Tab ── -->
+  <div class="tab-content" id="tab-planner">
+    <div id="plannerRoot"></div>
+  </div>
+
+  <!-- ── History Tab ── -->
+  <div class="tab-content" id="tab-history">
+    <div class="card">
+      <div class="card-title" style="justify-content:space-between;">
+        <span style="display:flex;align-items:center;gap:8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Post History
+        </span>
+        <button class="btn btn-ghost" onclick="clearHistory()" id="clearHistoryBtn" style="display:none;">Clear All</button>
+      </div>
+      <div id="historyList">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <p>No posts generated yet.<br>Generated posts will appear here.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── References Tab ── -->
+  <div class="tab-content" id="tab-references">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        Add Reference Post
+      </div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6;">
+        Add example posts that match the writing style you want. These will be injected into the AI prompt as style references.
+      </p>
+      <div class="form-group">
+        <label>Platform</label>
+        <select id="refPlatform">
+          <option value="linkedin">LinkedIn example</option>
+          <option value="instagram">Instagram example</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <textarea id="refText" placeholder="Paste an example post here..." rows="5"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="addReference()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Reference
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        Saved References
+      </div>
+      <div id="refList">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          <p>No reference posts saved yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Settings Tab ── -->
+  <div class="tab-content" id="tab-settings">
+    <!-- API Key -->
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        API Configuration
+      </div>
+      <div class="form-group">
+        <label>Anthropic API Key</label>
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-...">
+        <div class="form-hint">Your key is stored locally in your browser and never sent anywhere except Anthropic's API.</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="saveApiKey()">Save API Key</button>
+        <button class="btn btn-ghost" id="toggleKeyBtn" onclick="toggleKeyVisibility()">Show Key</button>
+      </div>
+    </div>
+
+    <!-- Writing Preferences -->
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Writing Preferences
+      </div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.6;">
+        Customize how posts are generated. These preferences are saved locally and applied to every generation.
+      </p>
+
+      <div class="form-group">
+        <label>Writing Style</label>
+        <textarea id="settingStyle" placeholder="e.g., Professional but approachable, thought-leadership tone, active voice, data-driven insights..." rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Post Format</label>
+        <textarea id="settingFormat" placeholder="e.g., Start with a hook question, use bullet points for key takeaways, end with a call-to-action..." rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Post Length</label>
+        <input type="text" id="settingLength" placeholder="e.g., 150-200 words, 3-4 short paragraphs">
+      </div>
+
+      <div class="form-group">
+        <label>Example Post (to match style)</label>
+        <textarea id="settingExample" placeholder="Paste a sample post whose style you want the AI to emulate..." rows="4"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Things to Avoid</label>
+        <textarea id="settingAvoid" placeholder="e.g., Don't use emojis, avoid buzzwords like 'synergy', no exclamation marks..." rows="3"></textarea>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="saveSettings()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save Settings
+        </button>
+        <button class="btn btn-danger" onclick="resetSettings()">Reset to Default</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  State
+// ═══════════════════════════════════════════════
+let currentPlatform = 'linkedin';
+let currentInputMode = 'text';
+let currentOutput = '';
+let isGenerating = false;
+
+// ═══════════════════════════════════════════════
+//  Tab Navigation
+// ═══════════════════════════════════════════════
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'history') renderHistory();
+    if (btn.dataset.tab === 'references') renderReferences();
+    if (btn.dataset.tab === 'planner') renderPlanner();
+  });
+});
+
+// ═══════════════════════════════════════════════
+//  Platform Selection
+// ═══════════════════════════════════════════════
+function selectPlatform(platform) {
+  currentPlatform = platform;
+  document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.platform-btn[data-platform="${platform}"]`).classList.add('active');
+  document.getElementById('platformLabel').textContent = platform === 'linkedin' ? 'LinkedIn' : 'Instagram';
+}
+
+// ═══════════════════════════════════════════════
+//  Input Toggle
+// ═══════════════════════════════════════════════
+function toggleInput(mode) {
+  currentInputMode = mode;
+  document.querySelectorAll('.input-toggle-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('inputText').style.display = mode === 'text' ? 'block' : 'none';
+  document.getElementById('inputUrl').style.display = mode === 'url' ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════
+//  API Key Management
+// ═══════════════════════════════════════════════
+function getApiKey() {
+  return localStorage.getItem('scm_api_key') || '';
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { showToast('Please enter an API key', 'error'); return; }
+  if (!key.startsWith('sk-ant-')) { showToast('Invalid key format. Should start with sk-ant-', 'error'); return; }
+  localStorage.setItem('scm_api_key', key);
+  updateApiStatus();
+  showToast('API key saved successfully', 'success');
+}
+
+function toggleKeyVisibility() {
+  const input = document.getElementById('apiKeyInput');
+  const btn = document.getElementById('toggleKeyBtn');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = 'Hide Key';
+  } else {
+    input.type = 'password';
+    btn.textContent = 'Show Key';
+  }
+}
+
+function updateApiStatus() {
+  const key = getApiKey();
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  if (key) {
+    dot.classList.add('connected');
+    text.textContent = 'API connected';
+  } else {
+    dot.classList.remove('connected');
+    text.textContent = 'API not configured';
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  Settings Management
+// ═══════════════════════════════════════════════
+function loadSettings() {
+  const settings = JSON.parse(localStorage.getItem('scm_settings') || '{}');
+  document.getElementById('settingStyle').value = settings.style || '';
+  document.getElementById('settingFormat').value = settings.format || '';
+  document.getElementById('settingLength').value = settings.length || '';
+  document.getElementById('settingExample').value = settings.example || '';
+  document.getElementById('settingAvoid').value = settings.avoid || '';
+  document.getElementById('apiKeyInput').value = getApiKey();
+}
+
+function saveSettings() {
+  const settings = {
+    style: document.getElementById('settingStyle').value.trim(),
+    format: document.getElementById('settingFormat').value.trim(),
+    length: document.getElementById('settingLength').value.trim(),
+    example: document.getElementById('settingExample').value.trim(),
+    avoid: document.getElementById('settingAvoid').value.trim()
+  };
+  localStorage.setItem('scm_settings', JSON.stringify(settings));
+  showToast('Settings saved', 'success');
+}
+
+function resetSettings() {
+  if (!confirm('Reset all writing preferences to default?')) return;
+  localStorage.removeItem('scm_settings');
+  loadSettings();
+  showToast('Settings reset', 'success');
+}
+
+function getSettings() {
+  return JSON.parse(localStorage.getItem('scm_settings') || '{}');
+}
+
+// ═══════════════════════════════════════════════
+//  References Management
+// ═══════════════════════════════════════════════
+function getReferences() {
+  return JSON.parse(localStorage.getItem('scm_references') || '[]');
+}
+
+function saveReferences(refs) {
+  localStorage.setItem('scm_references', JSON.stringify(refs));
+}
+
+function addReference() {
+  const platform = document.getElementById('refPlatform').value;
+  const text = document.getElementById('refText').value.trim();
+  if (!text) { showToast('Please paste an example post', 'error'); return; }
+  const refs = getReferences();
+  refs.unshift({ id: Date.now(), platform, text, added: new Date().toISOString() });
+  saveReferences(refs);
+  document.getElementById('refText').value = '';
+  renderReferences();
+  showToast('Reference added', 'success');
+}
+
+function deleteReference(id) {
+  if (!confirm('Delete this reference post?')) return;
+  const refs = getReferences().filter(r => r.id !== id);
+  saveReferences(refs);
+  renderReferences();
+  showToast('Reference deleted', 'success');
+}
+
+function renderReferences() {
+  const refs = getReferences();
+  const container = document.getElementById('refList');
+  if (refs.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      <p>No reference posts saved yet.</p>
+    </div>`;
+    return;
+  }
+  container.innerHTML = refs.map(r => `
+    <div class="ref-item">
+      <button class="btn btn-ghost ref-delete" onclick="deleteReference(${r.id})">✕</button>
+      <span class="ref-type ${r.platform}">${r.platform === 'linkedin' ? 'LinkedIn' : 'Instagram'} example</span>
+      <div class="ref-text" id="ref-${r.id}">${escapeHtml(r.text)}</div>
+      ${r.text.length > 300 ? `<span class="ref-expand" onclick="toggleRefExpand(${r.id})">Show more</span>` : ''}
+    </div>
+  `).join('');
+}
+
+function toggleRefExpand(id) {
+  const el = document.getElementById('ref-' + id);
+  const link = el.nextElementSibling;
+  el.classList.toggle('expanded');
+  link.textContent = el.classList.contains('expanded') ? 'Show less' : 'Show more';
+}
+
+// ═══════════════════════════════════════════════
+//  History Management
+// ═══════════════════════════════════════════════
+function getHistory() {
+  return JSON.parse(localStorage.getItem('scm_history') || '[]');
+}
+
+function saveToHistory(platform, content) {
+  const history = getHistory();
+  history.unshift({ id: Date.now(), platform, content, date: new Date().toISOString() });
+  if (history.length > 50) history.length = 50;
+  localStorage.setItem('scm_history', JSON.stringify(history));
+}
+
+function clearHistory() {
+  if (!confirm('Delete all history?')) return;
+  localStorage.removeItem('scm_history');
+  renderHistory();
+  showToast('History cleared', 'success');
+}
+
+function renderHistory() {
+  const history = getHistory();
+  const container = document.getElementById('historyList');
+  const clearBtn = document.getElementById('clearHistoryBtn');
+  clearBtn.style.display = history.length > 0 ? 'block' : 'none';
+  if (history.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <p>No posts generated yet.<br>Generated posts will appear here.</p>
+    </div>`;
+    return;
+  }
+  container.innerHTML = history.map(h => {
+    const date = new Date(h.date);
+    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' at ' + date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    return `
+    <div class="history-item" onclick="loadFromHistory(${h.id})">
+      <div class="history-meta">
+        <span class="history-platform ${h.platform}">${h.platform === 'linkedin' ? 'LinkedIn' : 'Instagram'}</span>
+        <span class="history-date">${dateStr}</span>
+      </div>
+      <div class="history-preview">${escapeHtml(h.content)}</div>
+      <div class="history-actions">
+        <button class="btn btn-ghost" onclick="event.stopPropagation(); copyText('${escapeAttr(h.content)}')">Copy</button>
+        <button class="btn btn-ghost" onclick="event.stopPropagation(); deleteHistoryItem(${h.id})">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadFromHistory(id) {
+  const item = getHistory().find(h => h.id === id);
+  if (!item) return;
+  // Switch to generate tab
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector('.tab-btn[data-tab="generate"]').classList.add('active');
+  document.getElementById('tab-generate').classList.add('active');
+  // Show output
+  selectPlatform(item.platform);
+  currentOutput = item.content;
+  showOutput(item.content);
+}
+
+function deleteHistoryItem(id) {
+  const history = getHistory().filter(h => h.id !== id);
+  localStorage.setItem('scm_history', JSON.stringify(history));
+  renderHistory();
+  showToast('Post deleted', 'success');
+}
+
+// ═══════════════════════════════════════════════
+//  Post Generation
+// ═══════════════════════════════════════════════
+async function generatePost() {
+  if (isGenerating) return;
+
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    showToast('Please set your API key in Settings first', 'error');
+    // Switch to settings tab
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector('.tab-btn[data-tab="settings"]').classList.add('active');
+    document.getElementById('tab-settings').classList.add('active');
+    return;
+  }
+
+  let articleContent = '';
+
+  if (currentInputMode === 'text') {
+    articleContent = document.getElementById('articleText').value.trim();
+    if (!articleContent) { showToast('Please paste the article text', 'error'); return; }
+  } else {
+    const url = document.getElementById('articleUrl').value.trim();
+    if (!url) { showToast('Please enter an article URL', 'error'); return; }
+    try {
+      showLoading('Fetching article...');
+      articleContent = await fetchWithProxies(url);
+      if (!articleContent || articleContent.length < 100) throw new Error('Could not extract meaningful content from URL');
+    } catch (e) {
+      showToast('Failed to fetch article: ' + e.message + '. Try pasting the text instead.', 'error');
+      hideLoading();
+      return;
+    }
+  }
+
+  // Build the prompt
+  const settings = getSettings();
+  const refs = getReferences().filter(r => r.platform === currentPlatform);
+
+  let systemPrompt = `You are a social media content writer for Suffolk University's Supply Chain Management (SCM) Program. You create ${currentPlatform === 'linkedin' ? 'LinkedIn posts' : 'Instagram captions'} based on articles provided by the user.
+
+CRITICAL RULES — ABSOLUTE, NO EXCEPTIONS:
+- You are a SUMMARIZER, not a creator. Your ONLY job is to distill and reformat information from the provided article.
+- NEVER hallucinate or fabricate information. Every single claim, fact, number, and insight must come DIRECTLY from the source article.
+- NEVER add facts, statistics, quotes, claims, or insights not EXPLICITLY stated in the source article.
+- NEVER infer, extrapolate, or "fill in gaps" with your own knowledge. If the article doesn't say it, you don't write it.
+- Do NOT add your own opinions, analysis, or commentary beyond what the article states.
+- Do NOT use phrases like "studies show" or "research suggests" unless the article specifically cites those studies.
+- This is STRICTLY grounded summarization — zero creativity, zero invention, zero embellishment.
+- Output PLAIN TEXT ONLY. No markdown formatting whatsoever — no asterisks, no bold (**), no italic (*), no headers (#), no bullet markers (- or *). Use line breaks and spacing for structure instead.
+- Do not use any markdown syntax at all in the output.`;
+
+  if (currentPlatform === 'linkedin') {
+    systemPrompt += `\n\nLINKEDIN POST GUIDELINES:
+- Professional, thought-leadership tone
+- Opens with a compelling hook or insight
+- Structured for readability (short paragraphs, line breaks)
+- Ends with engagement prompt or call-to-action
+- Tags Suffolk University SCM Program when relevant
+- No hashtag spam (3-5 relevant hashtags max, placed at end)`;
+  } else {
+    systemPrompt += `\n\nINSTAGRAM CAPTION GUIDELINES:
+- Shorter, punchier format
+- More visual, emotive language
+- Conversational and engaging tone
+- Ends with a block of relevant hashtags (8-15)
+- Include relevant supply chain / SCM hashtags
+- Use line breaks and emojis sparingly for visual structure`;
+  }
+
+  if (settings.style) systemPrompt += `\n\nWRITING STYLE PREFERENCE: ${settings.style}`;
+  if (settings.format) systemPrompt += `\n\nPOST FORMAT PREFERENCE: ${settings.format}`;
+  if (settings.length) systemPrompt += `\n\nPOST LENGTH PREFERENCE: ${settings.length}`;
+  if (settings.avoid) systemPrompt += `\n\nTHINGS TO AVOID: ${settings.avoid}`;
+
+  if (settings.example) {
+    systemPrompt += `\n\nEXAMPLE POST TO MATCH STYLE:\n---\n${settings.example}\n---\nEmulate the tone, structure, and voice of the above example.`;
+  }
+
+  if (refs.length > 0) {
+    systemPrompt += `\n\nREFERENCE ${currentPlatform.toUpperCase()} POSTS (match this style):\n`;
+    refs.forEach((r, i) => {
+      systemPrompt += `\n--- Reference ${i + 1} ---\n${r.text}\n`;
+    });
+    systemPrompt += `\n--- End References ---\nUse these reference posts to understand the desired tone, structure, and voice. Generate content in a similar style.`;
+  }
+
+  const userPrompt = `Based on the following article, write a ${currentPlatform === 'linkedin' ? 'LinkedIn post' : 'Instagram caption'} for Suffolk University's SCM Program. Remember: PLAIN TEXT ONLY, no markdown formatting.
+
+ARTICLE:
+${articleContent}`;
+
+  // Make API call with streaming
+  isGenerating = true;
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div> Generating...`;
+
+  document.getElementById('outputCard').style.display = 'block';
+  document.getElementById('outputTitle').textContent = currentPlatform === 'linkedin' ? 'LinkedIn Post' : 'Instagram Caption';
+  document.getElementById('outputArea').innerHTML = '<span class="streaming-cursor"></span>';
+  document.getElementById('charCount').textContent = '';
+
+  currentOutput = '';
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        stream: true,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => null);
+      throw new Error(errData?.error?.message || `API error: ${response.status}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+              currentOutput += parsed.delta.text;
+              document.getElementById('outputArea').innerHTML = escapeHtml(currentOutput) + '<span class="streaming-cursor"></span>';
+              document.getElementById('outputArea').scrollTop = document.getElementById('outputArea').scrollHeight;
+            }
+          } catch (e) { /* skip unparseable lines */ }
+        }
+      }
+    }
+
+    // Finalize
+    document.getElementById('outputArea').textContent = currentOutput;
+    updateCharCount(currentOutput);
+    saveToHistory(currentPlatform, currentOutput);
+
+  } catch (err) {
+    document.getElementById('outputArea').innerHTML = `<span style="color:var(--danger)">Error: ${escapeHtml(err.message)}</span>`;
+    showToast('Generation failed: ' + err.message, 'error');
+  } finally {
+    isGenerating = false;
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate Post`;
+  }
+}
+
+function regeneratePost() {
+  generatePost();
+}
+
+function showOutput(text) {
+  document.getElementById('outputCard').style.display = 'block';
+  document.getElementById('outputTitle').textContent = currentPlatform === 'linkedin' ? 'LinkedIn Post' : 'Instagram Caption';
+  document.getElementById('outputArea').textContent = text;
+  updateCharCount(text);
+}
+
+function updateCharCount(text) {
+  const len = text.length;
+  const el = document.getElementById('charCount');
+  el.textContent = `${len} characters`;
+  el.className = 'char-count';
+  if (currentPlatform === 'linkedin' && len > 3000) el.classList.add('over');
+  else if (currentPlatform === 'instagram' && len > 2200) el.classList.add('over');
+  else if (currentPlatform === 'linkedin' && len > 2500) el.classList.add('warn');
+  else if (currentPlatform === 'instagram' && len > 1800) el.classList.add('warn');
+}
+
+// ═══════════════════════════════════════════════
+//  URL Fetch with CORS Proxy Fallbacks
+// ═══════════════════════════════════════════════
+async function fetchWithProxies(url) {
+  const proxies = [
+    { name: 'direct', build: (u) => u },
+    { name: 'allorigins', build: (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}` },
+    { name: 'corsproxy', build: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}` },
+    { name: 'codetabs', build: (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}` },
+  ];
+
+  let lastError = null;
+
+  for (const proxy of proxies) {
+    try {
+      showLoading(`Trying ${proxy.name === 'direct' ? 'direct fetch' : proxy.name + ' proxy'}...`);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+
+      const resp = await fetch(proxy.build(url), {
+        signal: controller.signal,
+        headers: proxy.name === 'direct' ? {} : { 'Accept': 'text/html' }
+      });
+      clearTimeout(timeout);
+
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const html = await resp.text();
+
+      // Extract text from HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      doc.querySelectorAll('script, style, nav, footer, header, aside, [role="navigation"], [role="banner"]').forEach(el => el.remove());
+      const text = doc.body.innerText.replace(/\s+/g, ' ').trim();
+
+      if (text.length >= 100) {
+        showToast(`Article fetched via ${proxy.name}`, 'success');
+        return text;
+      }
+    } catch (e) {
+      lastError = e;
+      continue;
+    }
+  }
+
+  throw new Error(lastError?.message || 'All fetch methods failed');
+}
+
+function showLoading(msg) {
+  document.getElementById('outputCard').style.display = 'block';
+  document.getElementById('outputArea').innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div> ' + (msg || 'Fetching article...');
+}
+
+function hideLoading() {
+  document.getElementById('outputArea').innerHTML = '<span class="output-placeholder">Your generated post will appear here...</span>';
+}
+
+// ═══════════════════════════════════════════════
+//  Actions
+// ═══════════════════════════════════════════════
+function copyOutput() {
+  if (!currentOutput) { showToast('Nothing to copy', 'error'); return; }
+  navigator.clipboard.writeText(currentOutput).then(() => {
+    showToast('Copied to clipboard', 'success');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = currentOutput;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copied to clipboard', 'success');
+  });
+}
+
+function copyText(text) {
+  // Unescape the text
+  const decoded = text.replace(/\\n/g, '\n').replace(/\\'/g, "'").replace(/\\"/g, '"');
+  navigator.clipboard.writeText(decoded).then(() => {
+    showToast('Copied to clipboard', 'success');
+  }).catch(() => showToast('Copy failed', 'error'));
+}
+
+function openPlatform() {
+  if (!currentOutput) { showToast('Generate a post first', 'error'); return; }
+  openOnPlatform(currentOutput, currentPlatform);
+}
+
+function openOnPlatform(text, platform) {
+  if (platform === 'linkedin') {
+    const encoded = encodeURIComponent(text);
+    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
+  } else {
+    // Instagram has no URL-based caption prefill — copy first, then open
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Caption copied to clipboard! Paste it in Instagram.', 'success');
+      setTimeout(() => window.open('https://www.instagram.com/', '_blank'), 300);
+    }).catch(() => {
+      // Fallback copy
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Caption copied to clipboard! Paste it in Instagram.', 'success');
+      setTimeout(() => window.open('https://www.instagram.com/', '_blank'), 300);
+    });
+  }
+}
+
+function clearAll() {
+  document.getElementById('articleText').value = '';
+  document.getElementById('articleUrl').value = '';
+  document.getElementById('outputCard').style.display = 'none';
+  currentOutput = '';
+}
+
+// ═══════════════════════════════════════════════
+//  Utilities
+// ═══════════════════════════════════════════════
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function escapeAttr(str) {
+  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast ' + type;
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// ═══════════════════════════════════════════════
+//  Weekly Planner
+// ═══════════════════════════════════════════════
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+function getPlans() { return JSON.parse(localStorage.getItem('scm_plans') || '[]'); }
+function savePlans(p) { localStorage.setItem('scm_plans', JSON.stringify(p)); }
+function cleanExpiredPlans() {
+  const now = Date.now();
+  const plans = getPlans().filter(p => new Date(p.expiresAt).getTime() > now);
+  savePlans(plans);
+}
+function getActivePlan() {
+  cleanExpiredPlans();
+  const plans = getPlans();
+  return plans.length > 0 ? plans[plans.length - 1] : null;
+}
+function updatePlan(plan) {
+  const plans = getPlans().filter(p => p.id !== plan.id);
+  plans.push(plan);
+  savePlans(plans);
+}
+
+function renderPlanner() {
+  const root = document.getElementById('plannerRoot');
+  const plan = getActivePlan();
+  if (!plan || plan.step === 'deleted') { renderBriefForm(root); return; }
+  if (plan.step === 'ideas') { renderIdeasReview(root, plan); return; }
+  if (plan.step === 'articles') { renderArticlesStep(root, plan); return; }
+  if (plan.step === 'ready') { renderQueue(root, plan); return; }
+  renderBriefForm(root);
+}
+
+function stepperHTML(active) {
+  const steps = ['Brief','Ideas','Articles','Generate','Ready'];
+  const idx = steps.findIndex(s => s.toLowerCase() === active);
+  return `<div class="planner-progress">${steps.map((s,i) => {
+    const cls = i < idx ? 'done' : i === idx ? 'active' : '';
+    return `<div class="p-step ${cls}"><div class="p-num">${i < idx ? '✓' : i+1}</div>${s}</div>${i < steps.length-1 ? `<div class="p-line ${i < idx ? 'done' : ''}"></div>` : ''}`;
+  }).join('')}</div>`;
+}
+
+function renderBriefForm(root) {
+  root.innerHTML = `
+    <div class="card">${stepperHTML('brief')}
+      <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Create Weekly Content Plan</div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.6;">Describe your content goals for the week. AI will generate 7 post ideas, find articles, and write all posts for you.</p>
+      <div class="form-group"><label>Weekly Theme / Topic</label>
+        <textarea id="planTheme" rows="2" placeholder="e.g., Introduction to AI in Supply Chain Management for beginners..."></textarea></div>
+      <div class="form-group"><label>Target Audience</label>
+        <input type="text" id="planAudience" placeholder="e.g., Business professionals new to AI, SCM students..."></div>
+      <div class="form-group"><label>Content Goals / What you want to achieve</label>
+        <textarea id="planGoals" rows="2" placeholder="e.g., Educate about AI basics, show real-world SCM applications, build thought leadership..."></textarea></div>
+      <div class="form-group"><label>Platform</label>
+        <select id="planPlatform"><option value="linkedin">LinkedIn</option><option value="instagram">Instagram</option></select></div>
+      <div class="btn-group"><button class="btn btn-primary" onclick="generateIdeas()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Generate 7 Ideas</button></div>
+    </div>`;
+}
+
+async function generateIdeas() {
+  const theme = document.getElementById('planTheme').value.trim();
+  const audience = document.getElementById('planAudience').value.trim();
+  const goals = document.getElementById('planGoals').value.trim();
+  const platform = document.getElementById('planPlatform').value;
+  if (!theme) { showToast('Please enter a theme/topic', 'error'); return; }
+  const apiKey = getApiKey();
+  if (!apiKey) { showToast('Set your API key in Settings first', 'error'); return; }
+
+  const root = document.getElementById('plannerRoot');
+  root.querySelector('.btn-primary').disabled = true;
+  root.querySelector('.btn-primary').innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div> Generating ideas...';
+
+  try {
+    const prompt = `Generate exactly 7 content ideas for a week of social media posts (Monday through Sunday) for Suffolk University's Supply Chain Management Program.
+
+THEME: ${theme}
+TARGET AUDIENCE: ${audience || 'General professional audience'}
+GOALS: ${goals || 'Educate and engage'}
+PLATFORM: ${platform}
+
+For each day, provide:
+1. A compelling post title/topic
+2. A brief description of the angle/approach (2-3 sentences)
+3. A specific Google search query to find a real, high-quality source article for this topic
+
+IMPORTANT: Each idea should cover a different angle of the theme. Progress from introductory to more advanced topics throughout the week.
+
+Respond in this EXACT JSON format only, no other text:
+[{"day":"Monday","title":"...","description":"...","searchQuery":"..."},{"day":"Tuesday","title":"...","description":"...","searchQuery":"..."},{"day":"Wednesday","title":"...","description":"...","searchQuery":"..."},{"day":"Thursday","title":"...","description":"...","searchQuery":"..."},{"day":"Friday","title":"...","description":"...","searchQuery":"..."},{"day":"Saturday","title":"...","description":"...","searchQuery":"..."},{"day":"Sunday","title":"...","description":"...","searchQuery":"..."}]`;
+
+    const resp = await callClaude(prompt, 'You are a content strategist for Suffolk University SCM Program. Respond ONLY with valid JSON array, no markdown, no explanation.');
+    const cleaned = resp.replace(/```(?:json)?\s*/gi, '').replace(/```\s*/g, '').trim();
+    const ideas = JSON.parse(cleaned);
+
+    const plan = {
+      id: Date.now(),
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 30*24*60*60*1000).toISOString(),
+      brief: { theme, audience, goals, platform },
+      step: 'ideas',
+      ideas: ideas,
+      articles: [],
+      posts: []
+    };
+    updatePlan(plan);
+    renderPlanner();
+  } catch (e) {
+    showToast('Failed to generate ideas: ' + e.message, 'error');
+    root.querySelector('.btn-primary').disabled = false;
+    root.querySelector('.btn-primary').textContent = 'Generate 7 Ideas';
+  }
+}
+
+function renderIdeasReview(root, plan) {
+  root.innerHTML = `
+    <div class="card">${stepperHTML('ideas')}
+      <div class="card-title">📋 Review 7 Post Ideas</div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Review the ideas below. Once approved, the app will search for source articles.</p>
+      <div class="day-cards">${plan.ideas.map((idea, i) => `
+        <div class="day-card">
+          <div class="day-header"><span class="day-label">${idea.day}</span></div>
+          <div class="day-title">${escapeHtml(idea.title)}</div>
+          <div class="day-desc">${escapeHtml(idea.description)}</div>
+          <div class="day-article">🔍 Search: <em>${escapeHtml(idea.searchQuery)}</em></div>
+        </div>`).join('')}
+      </div>
+      <div class="btn-group" style="margin-top:20px;">
+        <button class="btn btn-primary" onclick="startArticleSearch()">✓ Approve & Find Articles</button>
+        <button class="btn btn-secondary" onclick="deletePlanAndRestart()">✕ Start Over</button>
+      </div>
+    </div>`;
+}
+
+async function startArticleSearch() {
+  const plan = getActivePlan();
+  if (!plan) return;
+  const root = document.getElementById('plannerRoot');
+  const btn = root.querySelector('.btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div> Searching articles...';
+
+  const articles = [];
+  for (let i = 0; i < plan.ideas.length; i++) {
+    const idea = plan.ideas[i];
+    btn.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div> Searching ${idea.day} (${i+1}/7)...`;
+    let found = await searchArticles(idea.searchQuery);
+    articles.push({ day: idea.day, title: idea.title, results: found, selectedUrl: found.length > 0 ? found[0].url : '', manualUrl: '' });
+  }
+  plan.articles = articles;
+  plan.step = 'articles';
+  updatePlan(plan);
+  renderPlanner();
+}
+
+async function searchArticles(query) {
+  const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+  const proxies = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(searchUrl)}`,
+    `https://corsproxy.io/?${encodeURIComponent(searchUrl)}`,
+  ];
+  for (const proxyUrl of proxies) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 10000);
+      const resp = await fetch(proxyUrl, { signal: ctrl.signal });
+      clearTimeout(t);
+      if (!resp.ok) continue;
+      const html = await resp.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const results = [];
+      doc.querySelectorAll('.result__a').forEach((a, idx) => {
+        if (idx >= 3) return;
+        let href = a.getAttribute('href') || '';
+        if (href.includes('uddg=')) { try { href = decodeURIComponent(href.split('uddg=')[1].split('&')[0]); } catch(e){} }
+        const title = a.textContent.trim();
+        const snippet = a.closest('.result')?.querySelector('.result__snippet')?.textContent?.trim() || '';
+        if (href.startsWith('http')) results.push({ title, url: href, snippet });
+      });
+      if (results.length > 0) return results;
+    } catch(e) { continue; }
+  }
+  return [];
+}
+
+function renderArticlesStep(root, plan) {
+  root.innerHTML = `
+    <div class="card">${stepperHTML('articles')}
+      <div class="card-title">📰 Confirm Source Articles</div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Select or paste a source article URL for each day. Posts will be generated by summarizing these articles only.</p>
+      <div class="day-cards">${plan.articles.map((art, i) => {
+        const hasResults = art.results && art.results.length > 0;
+        const currentUrl = art.manualUrl || art.selectedUrl || '';
+        return `
+        <div class="day-card">
+          <div class="day-header"><span class="day-label">${art.day}</span>
+            <a href="https://www.google.com/search?q=${encodeURIComponent(plan.ideas[i].searchQuery)}" target="_blank" class="btn btn-ghost" style="font-size:11px;">Search Google ↗</a>
+          </div>
+          <div class="day-title">${escapeHtml(art.title)}</div>
+          ${hasResults ? `<div class="article-results">${art.results.map((r, ri) => `
+            <div class="article-opt ${r.url === currentUrl ? 'selected' : ''}" onclick="selectArticle(${i}, ${ri})">
+              <div class="article-opt-title">${escapeHtml(r.title)}</div>
+              <div class="article-opt-url">${escapeHtml(r.url)}</div>
+              ${r.snippet ? `<div class="article-opt-snippet">${escapeHtml(r.snippet)}</div>` : ''}
+            </div>`).join('')}</div>` : `<p style="font-size:12px;color:var(--text-muted);margin-top:8px;">No articles found automatically. Paste a URL below or search Google.</p>`}
+          <div class="manual-url-row">
+            <input type="text" id="manualUrl${i}" value="${escapeHtml(art.manualUrl || '')}" placeholder="Paste article URL here..." onchange="setManualUrl(${i}, this.value)">
+          </div>
+        </div>`;
+      }).join('')}</div>
+      <div class="btn-group" style="margin-top:20px;">
+        <button class="btn btn-primary" onclick="generateAllPosts()">✓ Approve & Generate 7 Posts</button>
+        <button class="btn btn-secondary" onclick="deletePlanAndRestart()">✕ Start Over</button>
+      </div>
+    </div>`;
+}
+
+function selectArticle(dayIdx, resultIdx) {
+  const plan = getActivePlan();
+  plan.articles[dayIdx].selectedUrl = plan.articles[dayIdx].results[resultIdx].url;
+  plan.articles[dayIdx].manualUrl = '';
+  updatePlan(plan);
+  renderPlanner();
+}
+function setManualUrl(dayIdx, url) {
+  const plan = getActivePlan();
+  plan.articles[dayIdx].manualUrl = url.trim();
+  updatePlan(plan);
+}
+
+async function generateAllPosts() {
+  const plan = getActivePlan();
+  if (!plan) return;
+  const apiKey = getApiKey();
+  if (!apiKey) { showToast('Set API key in Settings first', 'error'); return; }
+
+  const root = document.getElementById('plannerRoot');
+  root.innerHTML = `
+    <div class="card">${stepperHTML('generate')}
+      <div class="card-title">⚡ Generating 7 Posts</div>
+      <p style="font-size:13px;color:var(--text-secondary);">Fetching articles and writing posts. This may take a minute...</p>
+      <div class="gen-progress"><div class="gen-progress-bar" id="genBar" style="width:0%"></div></div>
+      <div class="gen-status" id="genStatus">Starting...</div>
+    </div>`;
+
+  const settings = getSettings();
+  const refs = getReferences().filter(r => r.platform === plan.brief.platform);
+  const posts = [];
+
+  for (let i = 0; i < plan.articles.length; i++) {
+    const art = plan.articles[i];
+    const url = art.manualUrl || art.selectedUrl;
+    document.getElementById('genStatus').textContent = `${art.day}: Fetching article (${i+1}/7)...`;
+    document.getElementById('genBar').style.width = `${((i) / 7 * 100)}%`;
+
+    let articleContent = '';
+    if (url) {
+      try { articleContent = await fetchWithProxies(url); } catch(e) { articleContent = ''; }
+    }
+
+    if (!articleContent || articleContent.length < 80) {
+      articleContent = `[Article could not be fetched from URL: ${url || 'No URL provided'}]\nTopic: ${art.title}\nNote: Write a post based on this topic direction from the weekly plan. Only state general, well-established facts.`;
+    }
+
+    document.getElementById('genStatus').textContent = `${art.day}: Writing post (${i+1}/7)...`;
+
+    let sysPrompt = `You are a social media content writer for Suffolk University's Supply Chain Management (SCM) Program.
+
+CRITICAL RULES — ABSOLUTE:
+- You are a SUMMARIZER. Your ONLY job is to distill and reformat information from the provided article.
+- NEVER hallucinate or fabricate information. Every claim must come DIRECTLY from the source article.
+- NEVER add facts, statistics, or claims not in the source article.
+- NEVER infer or extrapolate. If the article doesn't say it, you don't write it.
+- STRICTLY grounded summarization — zero creativity, zero invention.
+- Output PLAIN TEXT ONLY. No markdown (no **, no *, no #, no - bullets). Use line breaks for structure.`;
+
+    if (plan.brief.platform === 'linkedin') {
+      sysPrompt += `\n\nFORMAT: LinkedIn post. Professional tone. Short paragraphs. 3-5 hashtags at end.`;
+    } else {
+      sysPrompt += `\n\nFORMAT: Instagram caption. Punchy, visual language. 8-15 hashtags at end.`;
+    }
+    if (settings.style) sysPrompt += `\nSTYLE: ${settings.style}`;
+    if (settings.format) sysPrompt += `\nFORMAT PREF: ${settings.format}`;
+    if (settings.length) sysPrompt += `\nLENGTH: ${settings.length}`;
+    if (settings.avoid) sysPrompt += `\nAVOID: ${settings.avoid}`;
+    if (refs.length > 0) {
+      sysPrompt += `\n\nSTYLE REFERENCES:\n` + refs.map((r,j) => `---\n${r.text}\n---`).join('\n');
+    }
+
+    const userPrompt = `Write a ${plan.brief.platform === 'linkedin' ? 'LinkedIn post' : 'Instagram caption'} for Suffolk University SCM Program. PLAIN TEXT ONLY. Summarize ONLY what is in the article below.\n\nARTICLE:\n${articleContent}`;
+
+    try {
+      const content = await callClaude(userPrompt, sysPrompt);
+      posts.push({ day: art.day, title: art.title, content, articleUrl: url, posted: false });
+    } catch(e) {
+      posts.push({ day: art.day, title: art.title, content: `[Error generating: ${e.message}]`, articleUrl: url, posted: false });
+    }
+    document.getElementById('genBar').style.width = `${((i+1) / 7 * 100)}%`;
+  }
+
+  plan.posts = posts;
+  plan.step = 'ready';
+  updatePlan(plan);
+
+  // Also save each to history
+  posts.forEach(p => { if (!p.content.startsWith('[Error')) saveToHistory(plan.brief.platform, p.content); });
+
+  showToast('All 7 posts generated!', 'success');
+  renderPlanner();
+}
+
+function renderQueue(root, plan) {
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const daysLeft = Math.ceil((new Date(plan.expiresAt).getTime() - Date.now()) / (1000*60*60*24));
+  const platformLabel = plan.brief.platform === 'linkedin' ? 'LinkedIn' : 'Instagram';
+
+  root.innerHTML = `
+    <div class="card">${stepperHTML('ready')}
+      <div class="card-title" style="justify-content:space-between;">
+        <span>📅 Weekly Content Queue</span>
+        <button class="btn btn-ghost" onclick="deletePlanAndRestart()">New Plan</button>
+      </div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Your 7 posts are ready. Pick today's post and publish with one click.</p>
+      <div class="day-cards">${plan.posts.map((post, i) => {
+        const isToday = post.day === today;
+        return `
+        <div class="day-card ${isToday ? 'today' : ''} ${post.posted ? 'posted' : ''}">
+          <div class="day-header">
+            <span class="day-label">${post.day} ${isToday ? '<span class="today-badge">TODAY</span>' : ''}
+            </span>
+            ${post.posted ? '<span class="posted-badge">Posted</span>' : ''}
+          </div>
+          <div class="day-title">${escapeHtml(post.title)}</div>
+          ${post.articleUrl ? `<div class="day-article">Source: <a href="${escapeHtml(post.articleUrl)}" target="_blank">${escapeHtml(post.articleUrl)}</a></div>` : ''}
+          <div class="day-post-preview" id="postPreview${i}">${escapeHtml(post.content)}</div>
+          <span class="ref-expand" onclick="togglePostExpand(${i})">Show more</span>
+          <div class="day-actions">
+            <button class="btn btn-primary" onclick="postFromQueue(${i})">
+              Post on ${platformLabel}
+            </button>
+            <button class="btn btn-secondary" onclick="copyQueuePost(${i})">Copy</button>
+            ${!post.posted ? `<button class="btn btn-ghost" onclick="markPosted(${i})">Mark as Posted</button>` : ''}
+          </div>
+        </div>`;
+      }).join('')}</div>
+      <div class="plan-expiry">Plan expires in ${daysLeft} days · Auto-deletes ${new Date(plan.expiresAt).toLocaleDateString()}</div>
+    </div>`;
+}
+
+function togglePostExpand(i) {
+  const el = document.getElementById('postPreview' + i);
+  el.classList.toggle('expanded');
+  el.nextElementSibling.textContent = el.classList.contains('expanded') ? 'Show less' : 'Show more';
+}
+
+function postFromQueue(i) {
+  const plan = getActivePlan();
+  if (!plan) return;
+  const post = plan.posts[i];
+  openOnPlatform(post.content, plan.brief.platform);
+  plan.posts[i].posted = true;
+  updatePlan(plan);
+  renderPlanner();
+}
+
+function copyQueuePost(i) {
+  const plan = getActivePlan();
+  if (!plan) return;
+  navigator.clipboard.writeText(plan.posts[i].content).then(() => showToast('Copied!', 'success')).catch(() => showToast('Copy failed', 'error'));
+}
+
+function markPosted(i) {
+  const plan = getActivePlan();
+  if (!plan) return;
+  plan.posts[i].posted = true;
+  updatePlan(plan);
+  renderPlanner();
+}
+
+function deletePlanAndRestart() {
+  if (getActivePlan() && !confirm('Delete current plan and start fresh?')) return;
+  const plans = getPlans();
+  if (plans.length > 0) { plans[plans.length - 1].step = 'deleted'; savePlans(plans); }
+  renderPlanner();
+}
+
+// Non-streaming Claude call for planner
+async function callClaude(userMsg, systemMsg) {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error('No API key');
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1500,
+      system: systemMsg,
+      messages: [{ role: 'user', content: userMsg }]
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => null);
+    throw new Error(err?.error?.message || `API ${resp.status}`);
+  }
+  const data = await resp.json();
+  return data.content[0].text;
+}
+
+// ═══════════════════════════════════════════════
+//  Init
+// ═══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  loadSettings();
+  updateApiStatus();
+  renderReferences();
+  cleanExpiredPlans();
+});
+</script>
+</body>
+</html>
