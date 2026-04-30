@@ -1665,11 +1665,11 @@ function openOnPlatform(text, platform) {
   navigator.clipboard.writeText(text).catch(() => {});
 
   if (platform === 'linkedin') {
-    const encoded = encodeURIComponent(text);
-    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
+    showToast('Post copied! Press Ctrl+V (or Cmd+V) to paste in LinkedIn.', 'success');
+    setTimeout(() => window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank'), 400);
   } else {
-    showToast('Caption copied to clipboard! Paste it in Instagram.', 'success');
-    setTimeout(() => window.open('https://www.instagram.com/', '_blank'), 300);
+    showToast('Caption copied! Press Ctrl+V (or Cmd+V) to paste in Instagram.', 'success');
+    setTimeout(() => window.open('https://www.instagram.com/', '_blank'), 400);
   }
 }
 
