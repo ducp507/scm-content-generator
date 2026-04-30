@@ -1380,14 +1380,11 @@ CRITICAL RULES — ABSOLUTE, NO EXCEPTIONS:
 - Do NOT add your own opinions, analysis, or commentary beyond what the article states.
 - Do NOT use phrases like "studies show" or "research suggests" unless the article specifically cites those studies.
 - This is STRICTLY grounded summarization — zero creativity, zero invention, zero embellishment.
-- When referencing data or claims, phrase them as "According to the article..." or "The article highlights..." to make source attribution clear.
-- If the article is too short or lacks substance, say so honestly rather than padding with your own knowledge.
 - Output PLAIN TEXT ONLY. No markdown formatting whatsoever — no asterisks, no bold (**), no italic (*), no headers (#), no bullet markers (- or *). Use line breaks and spacing for structure instead.
 - Do not use any markdown syntax at all in the output.`;
 
   if (currentPlatform === 'linkedin') {
     systemPrompt += `\n\nLINKEDIN POST GUIDELINES:
-- Keep the post between 150-250 words (concise and impactful)
 - Professional, thought-leadership tone
 - Opens with a compelling hook or insight
 - Structured for readability (short paragraphs, line breaks)
@@ -1421,13 +1418,7 @@ CRITICAL RULES — ABSOLUTE, NO EXCEPTIONS:
     systemPrompt += `\n--- End References ---\nUse these reference posts to understand the desired tone, structure, and voice. Generate content in a similar style.`;
   }
 
-  const userPrompt = `Based on the following article, write a ${currentPlatform === 'linkedin' ? 'LinkedIn post' : 'Instagram caption'} for Suffolk University's SCM Program.
-
-RULES REMINDER:
-- PLAIN TEXT ONLY, no markdown formatting.
-- ONLY use information found in the article below. Do NOT add any external knowledge.
-- Every claim in your post must be traceable to a specific part of the article.
-- If the article does not mention something, do NOT include it.
+  const userPrompt = `Based on the following article, write a ${currentPlatform === 'linkedin' ? 'LinkedIn post' : 'Instagram caption'} for Suffolk University's SCM Program. Remember: PLAIN TEXT ONLY, no markdown formatting.
 
 ARTICLE:
 ${articleContent}`;
@@ -1456,7 +1447,7 @@ ${articleContent}`;
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2048,
+        max_tokens: 1024,
         stream: true,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
