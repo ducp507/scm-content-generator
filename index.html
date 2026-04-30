@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCM Content Generator — Suffolk University</title>
+<title>SCM Content Generator v2.1 — Suffolk University</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -1608,8 +1608,10 @@ function copyText(text) {
 
 function openPlatform() {
   if (!currentOutput) { showToast('Generate a post first', 'error'); return; }
+  console.log('[SCM v2.1] openPlatform called. currentOutput length:', currentOutput.length, '| first 80 chars:', currentOutput.substring(0, 80), '| last 80 chars:', currentOutput.substring(currentOutput.length - 80));
   if (currentPlatform === 'linkedin') {
     const encoded = encodeURIComponent(currentOutput);
+    console.log('[SCM v2.1] LinkedIn URL total length:', ('https://www.linkedin.com/feed/?shareActive=true&text=' + encoded).length);
     window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
   } else {
     navigator.clipboard.writeText(currentOutput).catch(() => {});
