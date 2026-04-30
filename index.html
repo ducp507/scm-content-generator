@@ -1633,15 +1633,8 @@ function openOnPlatform(text, platform) {
 
   if (platform === 'linkedin') {
     copyPromise.then(() => {
-      // LinkedIn URL has a ~2000 char limit for the text parameter
-      // If text is short enough, use URL prefill; otherwise just copy + open
-      if (text.length <= 1800) {
-        const encoded = encodeURIComponent(text);
-        window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
-      } else {
-        showToast('Full post copied to clipboard! Paste it in LinkedIn.', 'success');
-        setTimeout(() => window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank'), 300);
-      }
+      const encoded = encodeURIComponent(text);
+      window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
     });
   } else {
     copyPromise.then(() => {
