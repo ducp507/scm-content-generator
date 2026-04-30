@@ -1455,7 +1455,7 @@ ${articleContent}`;
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 4096,
+        max_tokens: 1024,
         stream: true,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
@@ -1652,24 +1652,25 @@ function openPlatform() {
 }
 
 function openOnPlatform(text, platform) {
-  // Copy to clipboard first (use execCommand for reliability)
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.left = '-9999px';
-  document.body.appendChild(ta);
-  ta.select();
-  ta.setSelectionRange(0, ta.value.length);
-  document.execCommand('copy');
-  document.body.removeChild(ta);
-  navigator.clipboard.writeText(text).catch(() => {});
-
   if (platform === 'linkedin') {
-    showToast('Post copied! Press Ctrl+V (or Cmd+V) to paste in LinkedIn.', 'success');
-    setTimeout(() => window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank'), 400);
+    const encoded = encodeURIComponent(text);
+    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
   } else {
-    showToast('Caption copied! Press Ctrl+V (or Cmd+V) to paste in Instagram.', 'success');
-    setTimeout(() => window.open('https://www.instagram.com/', '_blank'), 400);
+    // Instagram: copy first then open
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Caption copied! Paste it in Instagram.', 'success');
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Caption copied! Paste it in Instagram.', 'success');
+    });
+    setTimeout(() => window.open('https://www.instagram.com/', '_blank'), 300);
   }
 }
 
