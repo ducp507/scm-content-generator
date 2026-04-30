@@ -1387,6 +1387,7 @@ CRITICAL RULES — ABSOLUTE, NO EXCEPTIONS:
 
   if (currentPlatform === 'linkedin') {
     systemPrompt += `\n\nLINKEDIN POST GUIDELINES:
+- Keep the post between 150-250 words (concise and impactful)
 - Professional, thought-leadership tone
 - Opens with a compelling hook or insight
 - Structured for readability (short paragraphs, line breaks)
@@ -1455,7 +1456,7 @@ ${articleContent}`;
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
+        max_tokens: 2048,
         stream: true,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
@@ -1476,19 +1477,12 @@ ${articleContent}`;
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
 
-      // Process complete SSE events (separated by double newline)
-      let boundary;
-      while ((boundary = buffer.indexOf('\n\n')) !== -1) {
-        const event = buffer.substring(0, boundary);
-        buffer = buffer.substring(boundary + 2);
-
-        // Extract all data: lines from this event
-        const dataLines = event.split('\n')
-          .filter(l => l.startsWith('data: '))
-          .map(l => l.slice(6));
-
-        for (const data of dataLines) {
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
           if (data === '[DONE]') continue;
           try {
             const parsed = JSON.parse(data);
@@ -1497,24 +1491,8 @@ ${articleContent}`;
               document.getElementById('outputArea').innerHTML = escapeHtml(currentOutput) + '<span class="streaming-cursor"></span>';
               document.getElementById('outputArea').scrollTop = document.getElementById('outputArea').scrollHeight;
             }
-          } catch (e) { /* skip unparseable */ }
+          } catch (e) { /* skip unparseable lines */ }
         }
-      }
-    }
-
-    // Process any remaining buffer
-    if (buffer.trim()) {
-      const dataLines = buffer.split('\n')
-        .filter(l => l.startsWith('data: '))
-        .map(l => l.slice(6));
-      for (const data of dataLines) {
-        if (data === '[DONE]') continue;
-        try {
-          const parsed = JSON.parse(data);
-          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-            currentOutput += parsed.delta.text;
-          }
-        } catch (e) {}
       }
     }
 
