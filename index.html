@@ -1455,7 +1455,7 @@ ${articleContent}`;
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
+        max_tokens: 4096,
         stream: true,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
@@ -1621,22 +1621,30 @@ function openPlatform() {
 }
 
 function openOnPlatform(text, platform) {
+  // Always copy to clipboard first as a reliable fallback
+  const copyPromise = navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+
   if (platform === 'linkedin') {
-    const encoded = encodeURIComponent(text);
-    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
+    copyPromise.then(() => {
+      // LinkedIn URL has a ~2000 char limit for the text parameter
+      // If text is short enough, use URL prefill; otherwise just copy + open
+      if (text.length <= 1800) {
+        const encoded = encodeURIComponent(text);
+        window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
+      } else {
+        showToast('Full post copied to clipboard! Paste it in LinkedIn.', 'success');
+        setTimeout(() => window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank'), 300);
+      }
+    });
   } else {
-    // Instagram has no URL-based caption prefill — copy first, then open
-    navigator.clipboard.writeText(text).then(() => {
-      showToast('Caption copied to clipboard! Paste it in Instagram.', 'success');
-      setTimeout(() => window.open('https://www.instagram.com/', '_blank'), 300);
-    }).catch(() => {
-      // Fallback copy
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
+    copyPromise.then(() => {
       showToast('Caption copied to clipboard! Paste it in Instagram.', 'success');
       setTimeout(() => window.open('https://www.instagram.com/', '_blank'), 300);
     });
