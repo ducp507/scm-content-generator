@@ -1385,7 +1385,8 @@ CRITICAL RULES — ABSOLUTE, NO EXCEPTIONS:
 
   if (currentPlatform === 'linkedin') {
     systemPrompt += `\n\nLINKEDIN POST GUIDELINES:
-- MAXIMUM 600 characters total. This is a hard limit. Count carefully. Be extremely concise.
+- ABSOLUTE MAXIMUM 700 characters including hashtags. Never exceed this. Be very concise.
+- Use only 3 hashtags maximum to save space.
 - Do NOT write section headers or titles in ALL CAPS. Write flowing paragraphs.
 - Focus on 2-3 key takeaways from the article, not a comprehensive summary.
 - Professional, thought-leadership tone
@@ -1450,7 +1451,7 @@ ${articleContent}`;
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 300,
+        max_tokens: 180,
         stream: true,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
