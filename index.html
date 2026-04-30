@@ -1385,7 +1385,7 @@ CRITICAL RULES — ABSOLUTE, NO EXCEPTIONS:
 
   if (currentPlatform === 'linkedin') {
     systemPrompt += `\n\nLINKEDIN POST GUIDELINES:
-- MAXIMUM 900 characters (about 120-150 words). Be concise and impactful.
+- MAXIMUM 600 characters total. This is a hard limit. Count carefully. Be extremely concise.
 - Do NOT write section headers or titles in ALL CAPS. Write flowing paragraphs.
 - Focus on 2-3 key takeaways from the article, not a comprehensive summary.
 - Professional, thought-leadership tone
@@ -1450,7 +1450,7 @@ ${articleContent}`;
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
+        max_tokens: 300,
         stream: true,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
@@ -1614,23 +1614,7 @@ function openPlatform() {
   console.log('[SCM v2.1] openPlatform called. currentOutput length:', currentOutput.length, '| first 80 chars:', currentOutput.substring(0, 80), '| last 80 chars:', currentOutput.substring(currentOutput.length - 80));
   if (currentPlatform === 'linkedin') {
     const encoded = encodeURIComponent(currentOutput);
-    const fullUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`;
-    if (fullUrl.length <= 2000) {
-      // Short enough for URL auto-fill
-      window.open(fullUrl, '_blank');
-    } else {
-      // Too long for URL — copy to clipboard and open compose
-      navigator.clipboard.writeText(currentOutput).catch(() => {
-        const ta = document.createElement('textarea');
-        ta.value = currentOutput;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-      });
-      showToast('Post copied! Ctrl+V / Cmd+V to paste in LinkedIn.', 'success');
-      setTimeout(() => window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank'), 400);
-    }
+    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
   } else {
     navigator.clipboard.writeText(currentOutput).catch(() => {});
     showToast('Caption copied — paste it in Instagram', 'success');
