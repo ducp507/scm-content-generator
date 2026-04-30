@@ -1614,27 +1614,19 @@ function hideLoading() {
 // ═══════════════════════════════════════════════
 //  Actions
 // ═══════════════════════════════════════════════
-function getOutputText() {
-  // Always read from DOM as source of truth — what the user sees is what they get
-  const domText = document.getElementById('outputArea')?.innerText?.trim() || '';
-  return domText || currentOutput;
-}
-
 function copyOutput() {
-  const text = getOutputText();
-  if (!text) { showToast('Nothing to copy', 'error'); return; }
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.left = '-9999px';
-  document.body.appendChild(ta);
-  ta.select();
-  ta.setSelectionRange(0, ta.value.length);
-  document.execCommand('copy');
-  document.body.removeChild(ta);
-  // Also try modern API
-  navigator.clipboard.writeText(text).catch(() => {});
-  showToast('Copied to clipboard', 'success');
+  if (!currentOutput) { showToast('Nothing to copy', 'error'); return; }
+  navigator.clipboard.writeText(currentOutput).then(() => {
+    showToast('Copied to clipboard', 'success');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = currentOutput;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copied to clipboard', 'success');
+  });
 }
 
 function copyText(text) {
@@ -1646,31 +1638,39 @@ function copyText(text) {
 }
 
 function openPlatform() {
-  const text = getOutputText();
-  if (!text) { showToast('Generate a post first', 'error'); return; }
-  openOnPlatform(text, currentPlatform);
+  if (!currentOutput) { showToast('Generate a post first', 'error'); return; }
+  if (currentPlatform === 'linkedin') {
+    const encoded = encodeURIComponent(currentOutput);
+    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
+  } else {
+    navigator.clipboard.writeText(currentOutput).catch(() => {});
+    showToast('Caption copied — paste it in Instagram', 'success');
+    window.open('https://www.instagram.com/', '_blank');
+  }
 }
 
 function openOnPlatform(text, platform) {
+  // For planner queue — uses clipboard approach
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  ta.style.top = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  ta.setSelectionRange(0, ta.value.length);
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  // Also try modern clipboard API as backup
+  try { navigator.clipboard.writeText(text); } catch(e) {}
+
   if (platform === 'linkedin') {
-    const encoded = encodeURIComponent(text);
-    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
+    showToast('✅ Post copied! Just Ctrl+V / Cmd+V in LinkedIn.', 'success');
+    setTimeout(() => window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank'), 500);
   } else {
-    // Instagram: copy first then open
-    navigator.clipboard.writeText(text).then(() => {
-      showToast('Caption copied! Paste it in Instagram.', 'success');
-    }).catch(() => {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.left = '-9999px';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      showToast('Caption copied! Paste it in Instagram.', 'success');
-    });
-    setTimeout(() => window.open('https://www.instagram.com/', '_blank'), 300);
+    showToast('✅ Caption copied! Just Ctrl+V / Cmd+V in Instagram.', 'success');
+    setTimeout(() => window.open('https://www.instagram.com/', '_blank'), 500);
   }
 }
 
