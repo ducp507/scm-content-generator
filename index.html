@@ -1614,8 +1614,23 @@ function openPlatform() {
   console.log('[SCM v2.1] openPlatform called. currentOutput length:', currentOutput.length, '| first 80 chars:', currentOutput.substring(0, 80), '| last 80 chars:', currentOutput.substring(currentOutput.length - 80));
   if (currentPlatform === 'linkedin') {
     const encoded = encodeURIComponent(currentOutput);
-    console.log('[SCM v2.1] LinkedIn URL total length:', ('https://www.linkedin.com/feed/?shareActive=true&text=' + encoded).length);
-    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
+    const fullUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`;
+    if (fullUrl.length <= 2000) {
+      // Short enough for URL auto-fill
+      window.open(fullUrl, '_blank');
+    } else {
+      // Too long for URL — copy to clipboard and open compose
+      navigator.clipboard.writeText(currentOutput).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = currentOutput;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      });
+      showToast('Post copied! Ctrl+V / Cmd+V to paste in LinkedIn.', 'success');
+      setTimeout(() => window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank'), 400);
+    }
   } else {
     navigator.clipboard.writeText(currentOutput).catch(() => {});
     showToast('Caption copied — paste it in Instagram', 'success');
