@@ -1451,7 +1451,7 @@ ${articleContent}`;
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 180,
+        max_tokens: 250,
         stream: true,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
@@ -1612,10 +1612,25 @@ function copyText(text) {
 
 function openPlatform() {
   if (!currentOutput) { showToast('Generate a post first', 'error'); return; }
-  console.log('[SCM v2.1] openPlatform called. currentOutput length:', currentOutput.length, '| first 80 chars:', currentOutput.substring(0, 80), '| last 80 chars:', currentOutput.substring(currentOutput.length - 80));
+  console.log('[SCM v2.1] openPlatform called. currentOutput length:', currentOutput.length);
+  let postText = currentOutput;
+
+  // Smart truncation for LinkedIn: trim at last complete sentence if URL would be too long
   if (currentPlatform === 'linkedin') {
-    const encoded = encodeURIComponent(currentOutput);
-    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank');
+    let encoded = encodeURIComponent(postText);
+    let fullUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`;
+    while (fullUrl.length > 1300 && postText.length > 100) {
+      // Find last sentence-ending punctuation
+      const lastSentence = Math.max(postText.lastIndexOf('. '), postText.lastIndexOf('? '), postText.lastIndexOf('! '), postText.lastIndexOf('.\n'), postText.lastIndexOf('?\n'), postText.lastIndexOf('!\n'));
+      if (lastSentence > 100) {
+        postText = postText.substring(0, lastSentence + 1);
+      } else {
+        break;
+      }
+      encoded = encodeURIComponent(postText);
+      fullUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`;
+    }
+    window.open(fullUrl, '_blank');
   } else {
     navigator.clipboard.writeText(currentOutput).catch(() => {});
     showToast('Caption copied — paste it in Instagram', 'success');
