@@ -1476,12 +1476,19 @@ ${articleContent}`;
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
 
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
+      // Process complete SSE events (separated by double newline)
+      let boundary;
+      while ((boundary = buffer.indexOf('\n\n')) !== -1) {
+        const event = buffer.substring(0, boundary);
+        buffer = buffer.substring(boundary + 2);
+
+        // Extract all data: lines from this event
+        const dataLines = event.split('\n')
+          .filter(l => l.startsWith('data: '))
+          .map(l => l.slice(6));
+
+        for (const data of dataLines) {
           if (data === '[DONE]') continue;
           try {
             const parsed = JSON.parse(data);
@@ -1490,15 +1497,29 @@ ${articleContent}`;
               document.getElementById('outputArea').innerHTML = escapeHtml(currentOutput) + '<span class="streaming-cursor"></span>';
               document.getElementById('outputArea').scrollTop = document.getElementById('outputArea').scrollHeight;
             }
-          } catch (e) { /* skip unparseable lines */ }
+          } catch (e) { /* skip unparseable */ }
         }
       }
     }
 
-    // Finalize — sync from DOM as source of truth
+    // Process any remaining buffer
+    if (buffer.trim()) {
+      const dataLines = buffer.split('\n')
+        .filter(l => l.startsWith('data: '))
+        .map(l => l.slice(6));
+      for (const data of dataLines) {
+        if (data === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+            currentOutput += parsed.delta.text;
+          }
+        } catch (e) {}
+      }
+    }
+
+    // Finalize
     document.getElementById('outputArea').textContent = currentOutput;
-    // Re-read from DOM to ensure consistency
-    currentOutput = document.getElementById('outputArea').innerText;
     updateCharCount(currentOutput);
     saveToHistory(currentPlatform, currentOutput);
 
